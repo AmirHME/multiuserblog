@@ -1,70 +1,36 @@
-/**
- * فایل dbConnect.js
- *
- * این فایل مسئول اتصال به دیتابیس MongoDB است
- * شامل توضیحات کامل خط به خط کد
- */
-
-// ایمپورت کتابخانه mongoose برای کار با MongoDB
 import mongoose from 'mongoose';
 
+// استفاده از نام متغیر دقیقاً مثل فایل .env.local
+const DB_URI = process.env.DB_URI;
+
+if (!DB_URI) {
+  throw new Error('❌ لطفاً متغیر محیطی DB_URI را در فایل .env.local تعریف کنید');
+}
+
 /**
- * تابع اتصال به دیتابیس
- * @returns {Promise<void>}
+ * اتصال به دیتابیس MongoDB (فقط یکبار)
  */
-const dbConnect = async () => {
+async function dbConnect() {
+  if (mongoose.connection.readyState >= 1) {
+    console.log('✅ MongoDB already connected');
+    return;
+  }
+
   try {
-    
-    // بررسی وضعیت اتصال فعلی
-    if (mongoose.connection.readyState >= 1) {
-      console.log('Already connected to MongoDB');
-      return;
-    }
+    console.log('🔌 Connecting to MongoDB...');
 
-    // تعریف تنظیمات اتصال به دیتابیس
     const options = {
-      // زمان انتظار برای انتخاب سرور (50 ثانیه)
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
       serverSelectionTimeoutMS: 10000,
-
-      // زمان انتظار برای سوکت (45 ثانیه)
-      socketTimeoutMS: 45000,
-
-      // زمان انتظار برای اتصال اولیه (30 ثانیه)
-      connectTimeoutMS: 30000,
-
-      // حداکثر تعداد اتصالات همزمان
-      maxPoolSize: 50,
-
-      // حداقل تعداد اتصالات همزمان
-      minPoolSize: 10,
-
-      // فرکانس بررسی وضعیت سرور (10 ثانیه)
-      heartbeatFrequencyMS: 10000,
-
-      // حالت مانیتورینگ سرور
-      serverMonitoringMode: 'stream',
-
-      // فعال کردن نوشتن مجدد در صورت خطا
-      retryWrites: true,
-
-      // سطح تایید نوشتن (اکثریت)
-      w: 'majority',
     };
 
-    // اتصال به دیتابیس با استفاده از آدرس و تنظیمات
-    // process.env.DB_URI آدرس دیتابیس از فایل .env
-    await mongoose.connect(process.env.DB_URI, options);
-
-    // نمایش پیام موفقیت
-    console.log('Connected to MongoDB successfully');
+    await mongoose.connect(DB_URI, options);
+    console.log('✅ Connected to MongoDB successfully');
   } catch (error) {
-    // نمایش خطا در صورت عدم موفقیت
-    console.error('Error connecting to MongoDB:', error);
-
-    // پرتاب خطا برای مدیریت در سطوح بالاتر
+    console.error('❌ MongoDB connection error:', error);
     throw error;
   }
-};
+}
 
-// اکسپورت تابع برای استفاده در سایر فایل‌ها
 export default dbConnect;
