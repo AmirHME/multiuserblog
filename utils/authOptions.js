@@ -1,11 +1,3 @@
-/**
- * فایل تنظیمات NextAuth
- * مسیر: utils/authOptions.js
- * 
- * این فایل شامل تمام تنظیمات مورد نیاز برای پیکربندی NextAuth است
- * از جمله استراتژی session، providers، و صفحات سفارشی
- */
-
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import User from "@/models/user";
@@ -15,100 +7,93 @@ import dbConnect from "@/utils/dbConnect";
 export const authOptions = {
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60,
   },
-  
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "select_account",
+          access_type: "offline",
+          response_type: "code",
+          scope: "openid email profile"
+        }
+      }
     }),
-
     CredentialsProvider({
       async authorize(credentials) {
         await dbConnect();
         const { email, password } = credentials;
+
         const user = await User.findOne({ email });
-        
-        if (!user) {
-          throw new Error("ایمیل یا رمز عبور نامعتبر است");
-        }
-        
-        if (!user?.password) {
-          throw new Error("لطفاً از روشی که برای ثبت‌نام استفاده کردید، وارد شوید");
-        }
-        
-        const isPasswordMatched = await bcrypt.compare(password, user?.password);
-        
-        if (!isPasswordMatched) {
-          throw new Error("ایمیل یا رمز عبور نامعتبر است");
-        }
-        
-        return user;
+        if (!user) throw new Error("ایمیل یا رمز عبور اشتباه است");
+        if (!user?.password) throw new Error("رمز برای این حساب تنظیم نشده است");
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) throw new Error("ایمیل یا رمز عبور اشتباه است");
+
+        return {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        };
       }
     })
   ],
-
   callbacks: {
     async signIn({ user, account }) {
       try {
         await dbConnect();
-        
-        if (account?.provider === "google") {
-          const { email, name, image } = user;
-          const dbUser = await User.findOne({ email });
-          
-          if (!dbUser) {
+        console.log("✅ Google SignIn started", { user: user.email, providerId: account.providerAccountId });
+
+        if (account.provider === "google") {
+          const existingUser = await User.findOne({
+            $or: [
+              { email: user.email },
+              { googleId: account.providerAccountId }
+            ]
+          });
+
+          if (!existingUser) {
             const newUser = await User.create({
-              email,
-              name,
-              image,
-              provider: "google"
+              name: user.name,
+              email: user.email,
+              image: user.image,
+              provider: "google",
+              googleId: account.providerAccountId
             });
-            user.id = newUser._id;
+            user.id = newUser._id.toString();
+            console.log("✅ New user created via Google");
           } else {
-            user.id = dbUser._id;
+            user.id = existingUser._id.toString();
+            console.log("✅ Existing Google user found");
           }
         }
+
         return true;
       } catch (error) {
-        console.error("Error in signIn callback:", error);
+        console.error("❌ Error in signIn callback", error);
         return false;
       }
     },
-
-    async jwt({ token, user, account }) {
+    async session({ session, token }) {
+      session.user.id = token.id;
+      session.user.email = token.email;
+      return session;
+    },
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
-        token.name = user.name;
-        token.image = user.image;
-        token.provider = account?.provider;
       }
       return token;
-    },
-
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.email = token.email;
-        session.user.name = token.name;
-        session.user.image = token.image;
-        session.user.provider = token.provider;
-      }
-      return session;
-    },
-
-    async redirect({ url, baseUrl }) {
-      if (url.startsWith(baseUrl)) return url;
-      return baseUrl;
     }
   },
-
-  secret: process.env.NEXTAUTH_SECRET,
-  
   pages: {
-    signIn: "/login",
     error: "/login"
-  }
-}; 
+  },
+  secret: process.env.NEXTAUTH_SECRET
+};
