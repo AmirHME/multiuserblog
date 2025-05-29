@@ -1,5 +1,9 @@
-// فایل middleware.js در ریشه پروژه
+//فایل middleware.js در ریشه پروژه
 
 // وارد کردن middleware آماده از next-auth
 export { default } from "next-auth/middleware";
-export const config = { matcher: ["/dashboard/:path*"] };
+
+// تعریف مسیرهایی که باید محافظت شوند
+export const config = {
+  matcher: ["/dashboard/:path*"],
+};
