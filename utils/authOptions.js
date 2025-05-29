@@ -79,6 +79,7 @@ export const authOptions = {
               email: user.email,
               image: user.image,
               provider: "google",
+              role: ["subscriber"],
               googleId: account.providerAccountId
             });
             user.id = newUser._id.toString(); // مقدار id به user اختصاص بده
@@ -97,21 +98,29 @@ export const authOptions = {
       }
     },
 
-    async session({ session, token }) {
-      // تنظیمات اطلاعات داخل سشن
-      session.user.id = token.id; // اضافه کردن id کاربر به session
-      session.user.email = token.email; // اضافه کردن ایمیل کاربر به session
-      return session; // بازگشت session کامل‌شده
+    session: async ({ session, token }) => {
+      // اطلاعات ذخیره‌شده در JWT را به session منتقل می‌کنیم
+      session.user.id = token.id; // ⬅️ شناسه کاربر را به session اضافه کن
+      session.user.email = token.email; // ⬅️ ایمیل کاربر را به session اضافه کن
+      session.user.role = token.role; // ⬅️ نقش کاربر را هم به session اضافه کن (مثلاً ["admin"])
+    
+      // session را بازمی‌گردانیم تا در کلاینت استفاده شود
+      return session;
     },
+    
 
-    async jwt({ token, user }) {
-      // تنظیمات توکن JWT
+    jwt: async ({ token, user }) => {
+      // اگر کاربر تازه وارد شده (مثلاً در مرحله ورود)، اطلاعاتش موجوده
       if (user) {
-        token.id = user.id; // اضافه کردن id کاربر به توکن
-        token.email = user.email; // اضافه کردن ایمیل به توکن
+        token.id = user.id; // ⬅️ شناسه کاربر را در توکن ذخیره کن
+        token.email = user.email; // ⬅️ ایمیل کاربر را در توکن ذخیره کن
+        token.role = user.role || ["subscriber"]; // ⬅️ نقش کاربر را ذخیره کن؛ اگر نبود مقدار پیش‌فرض بده
       }
-      return token; // بازگشت توکن
-    }
+    
+      // همیشه باید توکن را در انتها بازگردانیم
+      return token;
+    },
+    
   },
 
   pages: {
