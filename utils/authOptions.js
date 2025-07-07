@@ -99,27 +99,24 @@ export const authOptions = {
     },
 
     session: async ({ session, token }) => {
-      // اطلاعات ذخیره‌شده در JWT را به session منتقل می‌کنیم
-      session.user.id = token.id; // ⬅️ شناسه کاربر را به session اضافه کن
-      session.user.email = token.email; // ⬅️ ایمیل کاربر را به session اضافه کن
-      session.user.role = token.role; // ⬅️ نقش کاربر را هم به session اضافه کن (مثلاً ["admin"])
-    
-      // session را بازمی‌گردانیم تا در کلاینت استفاده شود
+      session.user.id = token.id;
+      session.user.email = token.email;
+      session.user.role = token.role; // اینجا هم از token.role استفاده کن
       return session;
     },
     
+    
 
     jwt: async ({ token, user }) => {
-      // اگر کاربر تازه وارد شده (مثلاً در مرحله ورود)، اطلاعاتش موجوده
       if (user) {
-        token.id = user.id; // ⬅️ شناسه کاربر را در توکن ذخیره کن
-        token.email = user.email; // ⬅️ ایمیل کاربر را در توکن ذخیره کن
-        token.role = user.role || ["subscriber"]; // ⬅️ نقش کاربر را ذخیره کن؛ اگر نبود مقدار پیش‌فرض بده
+        token.id = user.id;
+        token.email = user.email;
+        token.role = user.role || ["subscriber"]; // ذخیره مستقیم در token.role
       }
-    
-      // همیشه باید توکن را در انتها بازگردانیم
       return token;
     },
+    
+    
     
   },
 
