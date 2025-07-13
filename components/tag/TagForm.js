@@ -2,11 +2,11 @@
 "use client";  // این خط به Next.js می‌گوید که این کامپوننت باید در سمت کلاینت اجرا شود چون از useState استفاده می‌کند.
 
 import { useState } from "react";  // از هوک useState برای مدیریت وضعیت داخلی کامپوننت استفاده می‌کنیم.
+import { useBlog } from "@/context/blog";
 
 export default function TagForm() {
   // تعریف state محلی به نام name برای ذخیره مقدار ورودی ایجاد تگ
-  const [name, setName] = useState("");
-
+  const { tagName, setTagName, tags, setTags, tagCreate } = useBlog();
   // تابعی که هنگام ارسال فرم جستجو (Filter tags) فراخوانی می‌شود
   const handleSearch = (e) => {
     e.preventDefault();  // جلوگیری از رفرش شدن صفحه هنگام ارسال فرم
@@ -37,11 +37,12 @@ export default function TagForm() {
 
         {/* ستون دوم: فرم ایجاد تگ جدید */}
         <div className="col-lg-6">
-          <form onSubmit={handleTag}>
+          <form onSubmit={tagCreate}>
             <input
               type="text"
-              value={name}  // مقدار ورودی از state name گرفته می‌شود
-              onChange={(e) => setName(e.target.value)}  // هنگام تغییر ورودی، state به‌روزرسانی می‌شود
+              value={tagName}
+              onChange={(e) => setTagName(e.target.value)}
+                // هنگام تغییر ورودی، state به‌روزرسانی می‌شود
               placeholder="تگ جدید"  // اینجا کاربر نام تگ جدید را وارد می‌کند
               className="form-control p-5"
             />
@@ -70,5 +71,9 @@ export default function TagForm() {
     </>
   );
 }
+
+
+
+
 
 

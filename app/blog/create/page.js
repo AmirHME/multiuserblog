@@ -1,3 +1,4 @@
+"use client"
 // وارد کردن کامپوننت فرم بلاگ از مسیر components/blog
 import BlogForm from "@/components/blog/BlogForm";
 // وارد کردن کامپوننت فرم تگ‌ها از مسیر components/tag
@@ -5,8 +6,14 @@ import TagForm from "@/components/tag/TagForm";
 // وارد کردن کامپوننت تصویر شاخص از مسیر components/blog
 import FeaturedImage from "@/components/blog/FeaturedImage";
 
+// وارد کردن هوک useBlog برای دسترسی به context بلاگ
+import { useBlog } from "@/context/blog";
+
+
 // تعریف کامپوننت صفحه ایجاد بلاگ
 export default function BlogCreatePage() {
+  const { blogCreate } = useBlog();
+
   return (
     // یک کانتینر (container) از بوت‌استرپ برای قرار دادن محتوای صفحه
     <div className="container">
@@ -44,10 +51,15 @@ export default function BlogCreatePage() {
             p-5 برای padding
             rounded برای گوشه‌های گرد
             btn btn-primary برای دکمه با رنگ اصلی (آبی) */}
-        <div className="col-lg-6 p-5 rounded btn btn-primary">
-          انتشار
-        </div>
+        <div 
+          onClick={blogCreate}
+          className="col-lg-6 p-5 rounded btn btn-primary m-2"
+        >
+  انتشار
+</div>
       </div>
     </div>
   );
 }
+
+

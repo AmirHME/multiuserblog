@@ -19,6 +19,8 @@ import { Toaster } from "react-hot-toast";
 // SessionProvider برای مدیریت نشست کاربران (Login/Logout/Session) از next-auth وارد میشود
 import { SessionProvider } from "next-auth/react";
 
+import { BlogProvider } from "@/context/blog";
+
 // تابع اصلی Layout پروژه که قالب کلی صفحات و ساختار ثابت را مشخص می‌کند
 export default function RootLayout({ children }) {
   return (
@@ -32,19 +34,20 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
 
           {/* تگ <body> برای نمایش محتوای اصلی صفحات */}
-          <body suppressHydrationWarning={true}>
-            
-            {/* نوار بالایی سایت که در تمام صفحات ثابت نمایش داده می‌شود */}
-            <TopNav />
+        <BlogProvider>
+                     <body suppressHydrationWarning={true}>
+                        
+                        {/* نوار بالایی سایت که در تمام صفحات ثابت نمایش داده می‌شود */}
+                        <TopNav />
 
-            {/* Toaster برای نمایش اعلان‌های موقت در سراسر پروژه */}
-            <Toaster />
+                        {/* Toaster برای نمایش اعلان‌های موقت در سراسر پروژه */}
+                        <Toaster />
 
-            {/* children نشان‌دهنده محتوای اختصاصی هر صفحه است که درون قالب اصلی قرار می‌گیرد */}
-            {children}
+                        {/* children نشان‌دهنده محتوای اختصاصی هر صفحه است که درون قالب اصلی قرار می‌گیرد */}
+                        {children}
 
-          </body>
-
+                      </body>
+        </BlogProvider>
         </ThemeProvider>
 
       </SessionProvider>
