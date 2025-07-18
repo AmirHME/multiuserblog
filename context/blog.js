@@ -33,6 +33,19 @@ export const BlogProvider = ({ children }) => {
   // state برای نگهداری لیست تگ‌ها (آرایه‌ای از تگ‌ها)
   const [tags, setTags] = useState([]);
 
+
+  // context/blog
+// featured image
+  const [featuredImage, setFeaturedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+
+const [searchTerm, setSearchTerm] = useState(""); // state برای نگهداری عبارت جستجو
+
+const [selectedTags, setSelectedTags] = useState([]); // state برای نگهداری تگ‌های انتخاب‌شده 
+
+
   // useEffect برای مدیریت استایل دارک ادیتور وقتی theme تغییر می‌کنه
   useEffect(() => {
     const customStyle = document.createElement("style"); // ایجاد یک تگ <style>
@@ -78,7 +91,7 @@ const tagCreate = async (e) => {
 
   try {
     // ارسال درخواست POST به API سمت سرور
-    const response = await fetch(`${process.env.API}/crud/tag`, {
+    const response = await fetch(`/api/crud/tag`, {
       method: "POST",
       body: JSON.stringify({ name: tagName }), // ارسال name در بدنه
     });
@@ -105,13 +118,47 @@ const tagCreate = async (e) => {
 };
 
 
+
+// تابع حذف تگ از دیتابیس و رابط کاربری
+const tagDelete = async (tagId) => {
+  try {
+    // ارسال درخواست DELETE به API
+    const response = await fetch(`/api/crud/tag/${tagId}`, {
+      method: "DELETE",
+    });
+
+    const data = await response.json(); // گرفتن پاسخ از سرور
+
+    if (!response.ok) {
+      // اگر پاسخ خطا بود، پیام خطا را نمایش بده
+      toast.error(data?.err);
+    } else {
+      // اگر موفق بود:
+
+      // حذف تگ از آرایه selectedTags (تگ‌های انتخاب‌شده توسط کاربر)
+      const updatedSelectedTags = selectedTags.filter(
+        (tag) => tag._id !== tagId
+      );
+
+      // بروزرسانی state‌ها
+      setSelectedTags(updatedSelectedTags); // بروزرسانی selectedTags
+      setTags(tags.filter((tag) => tag._id !== tagId)); // حذف از لیست کل تگ‌ها
+      setTagName(""); // پاک کردن فیلد ورودی نام تگ
+      toast.success("تگ حذف شد"); // نمایش پیام موفقیت
+    }
+  } catch (err) {
+    console.log(err); // در صورت خطا در fetch، چاپ خطا در کنسول
+  }
+};
+
+
 // فایل: context/blog.js
 
 // تعریف تابع tagList برای گرفتن لیست تگ‌ها از سرور
 const tagList = async () => {
   try {
     // ارسال درخواست GET به API سمت سرور
-    const response = await fetch(`${process.env.API}/tags`, {
+    const response = await fetch(`/api/tags`, {
       method: "GET",
     });
 
@@ -154,7 +201,18 @@ const tagList = async () => {
         setTags,        // تابع به‌روزرسانی لیست تگ‌ها
         tagCreate,      // تابع ساخت تگ
         tagList,
-        blogCreate,     // تابع ساخت بلاگ
+        blogCreate,
+        searchTerm,
+        setSearchTerm,     // تابع ساخت بلاگ
+        selectedTags,
+        setSelectedTags,
+        featuredImage,
+        setFeaturedImage,
+        imagePreview,
+        setImagePreview,
+        uploadingImage,
+        setUploadingImage,
+        tagDelete,
       }}
     >
       {children}

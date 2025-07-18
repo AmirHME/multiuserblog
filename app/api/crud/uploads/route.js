@@ -1,6 +1,8 @@
 // فایل app/api/crud/uploads/route.js
 
-import { NextResponse } from "next/server";
+import {
+  NextResponse
+} from "next/server";
 import dbConnect from "@/utils/dbConnect"; // اتصال به دیتابیس (در صورت نیاز)
 import cloudinary from "cloudinary";
 
@@ -13,13 +15,21 @@ cloudinary.config({
 
 // متد POST برای دریافت تصویر و ارسال به Cloudinary
 export async function POST(req) {
-  const { image } = await req.json(); // دریافت تصویر Base64 از کلاینت
+  const {
+    image
+  } = await req.json(); // دریافت تصویر Base64 از کلاینت
   await dbConnect(); // اتصال به دیتابیس (در صورت نیاز)
 
   try {
     const result = await cloudinary.uploader.upload(image); // آپلود تصویر
-    return NextResponse.json({ url: result.secure_url }); // بازگرداندن آدرس تصویر
+    return NextResponse.json({
+      url: result.secure_url
+    }); // بازگرداندن آدرس تصویر
   } catch (err) {
-    return NextResponse.json({ err: err.message }, { status: 500 });
+    return NextResponse.json({
+      err: err.message
+    }, {
+      status: 500
+    });
   }
 }

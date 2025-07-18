@@ -1,35 +1,45 @@
-// فایل: app/api/crud/tag/route.js
+// API مربوط به ساخت تگ جدید
 
-// وارد کردن تابع برای تولید پاسخ در API
+// ایمپورت پاسخ‌دهی در API
 import { NextResponse } from "next/server";
 
-// وارد کردن مدل Tag برای کار با دیتابیس MongoDB
+// ایمپورت مدل تگ
 import Tag from "@/models/tag";
 
-// ایمپورت تابع اتصال به دیتابیس MongoDB
+// اتصال به دیتابیس
 import dbConnect from "@/utils/dbConnect";
 
-// نصب‌شده با: npm i slugify → برای تولید slug از name
+// کتابخانه تبدیل name به slug
 import slugify from "slugify";
 
-// تعریف تابع POST برای ساخت تگ جدید
+// گرفتن session سمت سرور
+import { getServerSession } from "next-auth/next";
+
+// تنظیمات احراز هویت
+import { authOptions } from "@/utils/authOptions";
+
+import mongoose from "mongoose";
+
+// متد POST برای ساخت تگ جدید
 export async function POST(req) {
   await dbConnect(); // اتصال به دیتابیس
 
-  // استخراج name از بدنه درخواست (JSON)
-  const { name } = await req.json();
+  const session = await getServerSession(authOptions); // گرفتن اطلاعات کاربر لاگین‌شده
+  const { name } = await req.json(); // دریافت name از درخواست
 
   try {
-    // ساخت تگ جدید در دیتابیس با name و slug ساخته‌شده از name
-    const tag = await Tag.create({ name, slug: slugify(name) });
+    // ساخت تگ در دیتابیس با اطلاعات کامل
+    const tag = await Tag.create({
+      name,
+      slug: slugify(name), // ساخت slug از name
+      postedBy: session.user.id, // ذخیره آیدی کاربری که تگ را ساخته
+    });
 
-    // برگرداندن پاسخ موفقیت‌آمیز با داده تگ
+    // ارسال پاسخ موفقیت‌آمیز
     return NextResponse.json(tag);
   } catch (err) {
-    // در صورت خطا (مثلاً تگ تکراری)، پاسخ با وضعیت 500 و پیام خطا برمی‌گردد
-    return NextResponse.json(
-      { err: err.message },
-      { status: 500 }
-    );
-  }
+    // ارسال خطا در صورت شکست عملیات
+    console.log("🛠 خطای حذف تگ:", err.message); // ← اینو اضافه کن
+    return NextResponse.json({ err: err.message }, { status: 500 });  }
 }
+

@@ -26,6 +26,11 @@ const tagSchema = new mongoose.Schema(
       index: true,          // روی این فیلد ایندکس ساخته شود (برای جستجو سریع‌تر)
       lowercase: true,      // تمام حروف آن به حروف کوچک تبدیل شود
     },
+    // models/Tag
+        postedBy: {
+            type: mongoose.Schema.ObjectId,
+            ref: "User",
+            },
   },
 
   // تنظیمات اضافی: mongoose به‌صورت خودکار createdAt و updatedAt را ذخیره کند
