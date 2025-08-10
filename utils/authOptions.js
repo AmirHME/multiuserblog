@@ -98,10 +98,24 @@ export const authOptions = {
       }
     },
 
+    
     session: async ({ session, token }) => {
-      session.user.id = token.id;
+      // اتصال به پایگاه داده MongoDB برای گرفتن اطلاعات کاربر
+      await dbConnect();
+    
+      // گرفتن نقش کاربر از دیتابیس بر اساس آیدی موجود در توکن
+      const userFromDb = await User.findById(token.id).select("role");
+    
+      // اضافه کردن آیدی کاربر به session (خیلی مهم برای عملیات‌هایی مثل ثبت بلاگ)
+      session.user.id = token.id; // ✅ بدون این خط، id کاربر در session وجود ندارد و خطا خواهید داشت
+    
+      // اضافه کردن ایمیل کاربر به session از اطلاعات موجود در توکن
       session.user.email = token.email;
-      session.user.role = token.role; // اینجا هم از token.role استفاده کن
+    
+      // اضافه کردن نقش‌های کاربر به session؛ اگر کاربر در دیتابیس نقش نداشت، "subscriber" پیش‌فرض قرار می‌گیرد
+      session.user.role = userFromDb?.role || ["subscriber"];
+    
+      // برگرداندن session کامل‌شده
       return session;
     },
     

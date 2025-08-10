@@ -22,35 +22,21 @@ import { imageUpload } from "@/utils/imageUpload";
 import { useBlog } from "@/context/blog"; 
 // گرفتن title و markdown و توابع به‌روزرسانی از context
 
+// فایل آماده‌شده برای رندر markdown با highlight
+import md from "@/utils/md";
+
+
 // تعریف کامپوننت BlogContent که بین دو مرحله قرار دارد
 export default function BlogContent({ onNextStep, onPrevStep }) {
   // گرفتن داده‌ها از context
   const { title, setTitle, markdown, setMarkdown } = useBlog();
-
-  // تنظیم markdown-it با قابلیت هایلایت کردن کد
-  const md = new MarkdownIt({
-    highlight: (str, lang) => {
-      // اگر زبان مشخص شده باشد و توسط hljs پشتیبانی شود، استفاده می‌شود
-      const language = lang && hljs.getLanguage(lang) ? lang : "js";
-
-      try {
-        const highlightedCode = hljs.highlight(language, str, true).value;
-        // تبدیل متن به HTML هایلایت شده
-
-        return `<pre class="hljs"><code>${highlightedCode}</code></pre>`;
-        // برگشت کد HTML هایلایت‌شده برای نمایش در خروجی
-      } catch (error) {
-        return ""; // اگر خطا رخ دهد، هیچ چیزی نمایش داده نمی‌شود
-      }
-    },
-  });
 
   return (
     <div>
       {/* بخش ویرایشگر متن بلاگ */}
       <MdEditor
         value={markdown} // مقدار فعلی متن که در context ذخیره شده
-        style={{ height: "80vh" }} // ارتفاع ویرایشگر در صفحه
+        style={{ height: "80vh"}} // ارتفاع ویرایشگر در صفحه
         onChange={({ text }) => setMarkdown(text)} // به‌روزرسانی state هنگام تغییر محتوا
         renderHTML={(text) => md.render(text)} // رندر HTML خروجی با markdown-it
         onImageUpload={(file) => imageUpload(file)} // آپلود تصویر با استفاده از تابع imageUpload

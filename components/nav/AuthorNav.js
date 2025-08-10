@@ -14,10 +14,16 @@ export default function AuthorNav() {
         </Link>
 
         {/* لینک به صفحه ساخت بلاگ جدید */}
-        <Link className="nav-link" href="/blog/create">
+        <a className="nav-link" href="/blog/create">
           یک بلاگ بنویس
+        </a>
+
+        {/* لینک به صفحه نمایش بلاگ های من */}
+        <Link className="nav-link" href="/dashboard/author/blogs">
+          بلاگ های من
         </Link>
 
+        
       </nav>
     </>
   );

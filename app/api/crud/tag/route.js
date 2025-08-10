@@ -18,13 +18,19 @@ import { getServerSession } from "next-auth/next";
 // تنظیمات احراز هویت
 import { authOptions } from "@/utils/authOptions";
 
+
+import { createExcerpt , currentUser} from "@/utils/helpers";
+
+
 import mongoose from "mongoose";
 
 // متد POST برای ساخت تگ جدید
 export async function POST(req) {
   await dbConnect(); // اتصال به دیتابیس
 
-  const session = await getServerSession(authOptions); // گرفتن اطلاعات کاربر لاگین‌شده
+  const user = await currentUser();
+
+  // const session = await getServerSession(authOptions); // گرفتن اطلاعات کاربر لاگین‌شده
   const { name } = await req.json(); // دریافت name از درخواست
 
   try {
@@ -32,7 +38,7 @@ export async function POST(req) {
     const tag = await Tag.create({
       name,
       slug: slugify(name), // ساخت slug از name
-      postedBy: session.user.id, // ذخیره آیدی کاربری که تگ را ساخته
+      postedBy: user.id, // ذخیره آیدی کاربری که تگ را ساخته
     });
 
     // ارسال پاسخ موفقیت‌آمیز

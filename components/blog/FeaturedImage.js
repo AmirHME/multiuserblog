@@ -98,6 +98,7 @@ export default function FeaturedImage({ onNextStep, onPrevStep }) {
         <button
           className="btn btn-outline-primary p-5 col-6 my-5 me-1"
           onClick={onPrevStep} // رفتن به مرحله قبل
+          disabled={uploadingImage}  
         >
           قبلی
         </button>
@@ -105,7 +106,7 @@ export default function FeaturedImage({ onNextStep, onPrevStep }) {
         <button
           className="btn btn-outline-primary p-5 col-6 my-5 ms-1"
           onClick={onNextStep} // رفتن به مرحله بعد
-          disabled={!featuredImage} // فقط وقتی فعال است که تصویر انتخاب شده باشد
+          disabled={uploadingImage} // فقط وقتی فعال است که تصویر انتخاب شده باشد
         >
           بعدی
         </button>

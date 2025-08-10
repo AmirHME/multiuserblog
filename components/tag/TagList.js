@@ -32,13 +32,7 @@ export default function TagList() {
     tagList(); // فراخوانی تابع گرفتن تگ‌ها
   }, []);
 
-  // زمانی که کامپوننت mount شد، تگ‌های ذخیره‌شده در localStorage بازیابی شود
-  useEffect(() => {
-    const storedTags = JSON.parse(localStorage.getItem("selectedTags")) || []; 
-    // اگر چیزی در localStorage ذخیره شده بود، بخونش، وگرنه آرایه خالی برگردون
-
-    setSelectedTags(storedTags); // مقداردهی اولیه selectedTags از localStorage
-  }, []);
+  // ⚠️ حذف useEffect مربوط به localStorage چون در حالت ویرایش تگ‌ها را خراب می‌کرد
 
   // تابع انتخاب تگ توسط کاربر
   const handleTagSelect = (tag) => {

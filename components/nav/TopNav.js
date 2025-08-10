@@ -26,9 +26,12 @@ export default function TopNav() {
         <Link className="nav-link mt-2" href="/">
           🌀
         </Link>
-        <Link className="nav-link" href="/blog/create">
-          یک بلاگ بنویس
-        </Link>
+        <Link
+  className="nav-link"
+  href={status === "authenticated" ? "/blog/create" : "/register"}
+>
+  یک بلاگ بنویس
+</Link>
       </div>
 
       {/* بخش سمت راست: بر اساس وضعیت ورود کاربر */}

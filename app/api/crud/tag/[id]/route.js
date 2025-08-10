@@ -1,51 +1,60 @@
 // فایل: app/api/crud/tag/[id]/route.js
 
-// ایمپورت تابع پاسخ‌دهی از next/server برای ارسال پاسخ HTTP
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"; // برای ساخت پاسخ HTTP
+import Tag from "@/models/tag"; // مدل تگ
+import Blog from "@/models/blog"; // مدل بلاگ برای بررسی استفاده از تگ
+import dbConnect from "@/utils/dbConnect"; // اتصال به دیتابیس
+// import { getServerSession } from "next-auth/next"; // گرفتن session
+// import { authOptions } from "@/utils/authOptions"; // تنظیمات احراز هویت
+import { createExcerpt , currentUser} from "@/utils/helpers";
 
-// ایمپورت مدل تگ از پوشه models برای کار با دیتابیس
-import Tag from "@/models/tag";
-
-// ایمپورت تابع اتصال به دیتابیس MongoDB
-import dbConnect from "@/utils/dbConnect";
-
-// ایمپورت گرفتن session از سمت سرور (با NextAuth)
-import { getServerSession } from "next-auth/next";
-
-// ایمپورت تنظیمات احراز هویت برای session
-import { authOptions } from "@/utils/authOptions";
-
-// تابع DELETE برای حذف یک تگ خاص با آیدی مشخص
 export async function DELETE(req, context) {
-  // اتصال به دیتابیس MongoDB
-  await dbConnect();
+  await dbConnect(); // اتصال به دیتابیس
 
-  // گرفتن session کاربر لاگین‌شده (شامل اطلاعات احراز هویت)
-  const session = await getServerSession(authOptions);
+  const user = await currentUser();
+
+  // const session = await getServerSession(authOptions); // گرفتن session
 
   try {
-    // استخراج آیدی تگ از پارامتر آدرس (context.params.id)
-    const tag = await Tag.findById(context.params.id);
+    const tag = await Tag.findById(context.params.id); // پیدا کردن تگ
 
-    // بررسی مجوز کاربر برای حذف تگ
-    if (
-      tag.postedBy.toString() === session.user.id.toString() || // اگر خود کاربر سازنده تگ باشد
-      session.user.role === "admin" // یا نقش کاربر "admin" باشد
-    ) {
-      // حذف تگ از دیتابیس
-      const deletedTag = await Tag.findByIdAndDelete(context.params.id);
+    // بررسی اینکه آیا کاربر مجاز به حذف هست یا نه
+    const isOwner = tag.postedBy.toString() === user.id.toString();
+    const isAdmin = user.role === "admin";
 
-      // ارسال پاسخ موفقیت‌آمیز همراه با داده تگ حذف‌شده
-      return NextResponse.json(deletedTag);
+    if (isOwner || isAdmin) {
+      // بررسی اینکه آیا این تگ در بلاگی استفاده شده؟
+      const blogsWithThisTag = await Blog.find({ tags: context.params.id });
+
+      if (blogsWithThisTag.length === 0) {
+        // اگر هیچ بلاگی از این تگ استفاده نکرده، اجازه حذف داریم
+        const deletedTag = await Tag.findByIdAndDelete(context.params.id);
+        return NextResponse.json(deletedTag);
+      } else {
+        // اگر تگ در بلاگ‌ها استفاده شده بود، خطای مناسب برگردان
+        return NextResponse.json(
+          {
+            err: "این تگ در یک یا چند بلاگ استفاده شده و قابل حذف نیست.",
+          },
+          { status: 403 }
+        );
+      }
     } else {
-      // اگر کاربر مجاز نیست، خطای 403 (مجاز نیست) برگردان
+      // کاربر مجاز به حذف این تگ نیست
       return NextResponse.json(
-        { err: "Unauthorized to delete this tag." },
+        { err: "شما اجازه حذف این تگ را ندارید." },
         { status: 403 }
       );
     }
   } catch (err) {
-    // در صورت بروز خطای پیش‌بینی‌نشده، پاسخ با وضعیت 500 (خطای سرور داخلی) ارسال می‌شود
+    // خطای سرور
     return NextResponse.json({ err: err.message }, { status: 500 });
   }
 }
+
+
+
+
+
+
+

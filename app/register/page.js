@@ -50,7 +50,7 @@ export default function Register() {
 
       
 // ارسال درخواست به API - ارسال اطلاعات ثبت‌نام به اندپوینت API در سرور
-      const response = await fetch('/api/register', {
+      const response = await fetch(`/api/register`, {
         method: 'POST', 
 // متد HTTP از نوع POST
         headers: {
