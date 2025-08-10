@@ -82,7 +82,7 @@ export default function Login() {
   return (
     <main>
       <div className="container">
-        <div className="row d-flex justify-content-center align-items-center vh-90">
+        <div className="row d-flex justify-content-center align-items-center vh-10">
           <div className="col-lg-5 p-4 shadow">
             <h2 className="mb-4 lead fw-bold">ورود</h2>
 

@@ -109,7 +109,7 @@ export default function Register() {
   return (
     <div className="container"> 
 {/* کانتینر اصلی با استایل Bootstrap */}
-      <div className="row d-flex justify-content-center align-items-center vh-100"> 
+      <div className="row d-flex justify-content-center align-items-center vh-10"> 
 {/* ردیفی که محتوا را در مرکز صفحه قرار می‌دهد */}
         <div className="col-lg-5 shadow p-5 bg-body-tertiary rounded"> 
 {/* ستونی با سایه، پدینگ و گوشه‌های گرد */}
