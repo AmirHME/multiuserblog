@@ -51,14 +51,29 @@ export const authOptions = {
   ],
 
   callbacks: {
+    // توابعی که قبل یا بعد از ورود اجرا می‌شن
+
     async signIn({ user, account }) {
       try {
-        await dbConnect();
+        await dbConnect(); // اتصال به پایگاه داده
+
+        console.log("✅ Google SignIn started", {
+          user: user.email,
+          providerId: account.providerAccountId
+        });
+
         if (account.provider === "google") {
+          // اگر ورود با گوگل باشه
           const existingUser = await User.findOne({
-            $or: [{ email: user.email }, { googleId: account.providerAccountId }]
+            // جستجوی کاربر بر اساس ایمیل یا Google ID
+            $or: [
+              { email: user.email },
+              { googleId: account.providerAccountId }
+            ]
           });
+
           if (!existingUser) {
+            // اگر کاربر وجود نداشت، کاربر جدید بساز
             const newUser = await User.create({
               name: user.name,
               email: user.email,
@@ -67,48 +82,61 @@ export const authOptions = {
               role: ["subscriber"],
               googleId: account.providerAccountId
             });
-            user.id = newUser._id.toString();
+            user.id = newUser._id.toString(); // مقدار id به user اختصاص بده
+            console.log("✅ New user created via Google");
           } else {
-            user.id = existingUser._id.toString();
+            // اگر کاربر قبلاً ثبت‌نام کرده بود
+            user.id = existingUser._id.toString(); // مقدار id موجود رو ذخیره کن
+            console.log("✅ Existing Google user found");
           }
         }
-        return true;
+
+        return true; // اجازه ادامه ورود
       } catch (error) {
-        return false;
+        console.error("❌ Error in signIn callback", error); // خطا در ورود
+        return false; // اجازه نده ورود انجام بشه
       }
     },
 
+    
     session: async ({ session, token }) => {
+      // اتصال به پایگاه داده MongoDB برای گرفتن اطلاعات کاربر
       await dbConnect();
+    
+      // گرفتن نقش کاربر از دیتابیس بر اساس آیدی موجود در توکن
       const userFromDb = await User.findById(token.id).select("role");
-      session.user.id = token.id;
+    
+      // اضافه کردن آیدی کاربر به session (خیلی مهم برای عملیات‌هایی مثل ثبت بلاگ)
+      session.user.id = token.id; // ✅ بدون این خط، id کاربر در session وجود ندارد و خطا خواهید داشت
+    
+      // اضافه کردن ایمیل کاربر به session از اطلاعات موجود در توکن
       session.user.email = token.email;
-      session.user.role = userFromDb?.role || token.role || ["subscriber"];
+    
+      // اضافه کردن نقش‌های کاربر به session؛ اگر کاربر در دیتابیس نقش نداشت، "subscriber" پیش‌فرض قرار می‌گیرد
+      session.user.role = userFromDb?.role || ["subscriber"];
+    
+      // برگرداندن session کامل‌شده
       return session;
     },
+    
+    
 
-    // پشتیبانی از به‌روزرسانی نقش از کلاینت با useSession().update
-    jwt: async ({ token, user, trigger, session }) => {
-      await dbConnect();
+    jwt: async ({ token, user }) => {
       if (user) {
         token.id = user.id;
         token.email = user.email;
-        token.role = user.role || ["subscriber"];
-      } else if (trigger === "update" && session?.role) {
-        // وقتی کلاینت update({ role }) صدا می‌زند
-        token.role = session.role;
-      } else if (token?.id) {
-        // همگام‌سازی دوره‌ای با دیتابیس (برای اطمینان)
-        const fresh = await User.findById(token.id).select("role");
-        if (fresh?.role) token.role = fresh.role;
+        token.role = user.role || ["subscriber"]; // ذخیره مستقیم در token.role
       }
       return token;
-    }
+    },
+    
+    
+    
   },
 
   pages: {
-    error: "/login"
+    error: "/login" // صفحه‌ای که در صورت خطا به آن ریدایرکت می‌شود
   },
 
-  secret: process.env.NEXTAUTH_SECRET
+  secret: process.env.NEXTAUTH_SECRET // کلید رمزنگاری JWT و سشن‌ها
 };

@@ -13,7 +13,7 @@ import { useSession, signOut } from "next-auth/react";
 // تعریف کامپوننت ناوبری بالا
 export default function TopNav() {
   // گرفتن اطلاعات نشست کاربر (data: اطلاعات کاربر، status: وضعیت ورود)
-  const { data, status } = useSession(); 
+  const { data, status } = useSession();
 
 
 
@@ -57,13 +57,13 @@ export default function TopNav() {
   if (r === "subscriber") return null;
   // نمایش یک لینک برای هر نقش با مسیر مناسب
   return (
-    <Link
+    <a
       key={r} // استفاده از نام نقش به عنوان کلید یکتا برای React
       className="nav-link" // کلاس استایل‌دهی برای لینک
       href={`/dashboard/${r === "subscriber" ? "user" : r}`} // اگر نقش subscriber باشد مسیر شود /dashboard/user، در غیر این صورت مسیر نقش (مثلاً /dashboard/admin)
     >
       {roleLabels[r] || r} {/* اگر معادل فارسی تعریف شده بود، نمایش بده؛ اگر نه خود متن نقش را نمایش بده */}
-    </Link>
+    </a>
   );
 })}
 

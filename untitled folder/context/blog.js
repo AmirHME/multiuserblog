@@ -13,7 +13,6 @@ import editorDarkCss from "@/utils/editorDarkCss";
 
 import { toast } from "react-hot-toast";
 // ایمپورت کتابخانه toast برای نمایش اعلان‌های پاپ‌آپ به کاربر
-import { useSession } from "next-auth/react";
 
 
 
@@ -23,7 +22,6 @@ const BlogContext = createContext();
 // تعریف Provider که همه stateها رو به صورت global در اختیار فرزندان قرار می‌ده
 export const BlogProvider = ({ children }) => {
   const { theme } = useTheme(); // گرفتن وضعیت theme از context theme
-  const { update } = useSession();
 
   // state برای نگهداری عنوان بلاگ
   const [title, setTitle] = useState("");
@@ -62,6 +60,7 @@ const [searchTerm, setSearchTerm] = useState(""); // state برای نگهدار
 
 const [selectedTags, setSelectedTags] = useState([]); // state برای نگهداری تگ‌های انتخاب‌شده 
 
+
 //blogs
 // برای نگه‌داری لیست بلاگ‌های نویسنده
 const [blogs, setBlogs] = useState([]);
@@ -72,8 +71,11 @@ const [page, setPage] = useState(1);
 // تعداد کل صفحات موجود
 const [totalPages, setTotalPages] = useState(0);
 
+
 // update
 const [id, setId] = useState(0); //added for blog update
+
+
 
   // useEffect برای مدیریت استایل دارک ادیتور وقتی theme تغییر می‌کنه
   useEffect(() => {
@@ -120,29 +122,45 @@ useEffect(() => {
   }
 }, [title, markdown]);
 
+
+
+
+  // تابع ساخت تگ جدید که فعلاً فقط لاگ می‌گیرد
+// فایل: context/blog.js
+
 // تابع برای ارسال درخواست ایجاد تگ جدید
 const tagCreate = async (e) => {
   e.preventDefault(); // جلوگیری از رفرش فرم
 
   try {
+    // ارسال درخواست POST به API سمت سرور
     const response = await fetch(`/api/crud/tag`, {
       method: "POST",
       body: JSON.stringify({ name: tagName }), // ارسال name در بدنه
     });
 
+    // خواندن پاسخ JSON
     const data = await response.json();
 
     if (!response.ok) {
+      // اگر پاسخ موفق نبود، پیام خطا نمایش داده می‌شود
       toast.error(data?.err);
     } else {
+      // اگر موفق بود: 
+      // - تگ جدید را به ابتدای لیست اضافه کن
       setTags([data, ...tags]);
+      // - مقدار ورودی را پاک کن
       setTagName("");
+      // - اعلان موفقیت نمایش بده
       toast.success("تگ ساخته شد");
     }
   } catch (err) {
+    // در صورت خطای شبکه یا برنامه‌نویسی، در کنسول چاپ شود
     console.log(err);
   }
 };
+
+
 
 // تابع حذف تگ از دیتابیس و رابط کاربری
 const tagDelete = async (tagId) => {
@@ -208,52 +226,48 @@ const tagList = async () => {
 
   // تابعی برای ساخت بلاگ جدید و ارسال آن به API سرور
 const blogCreate = async (e) => {
-  e.preventDefault();
+  e.preventDefault(); // جلوگیری از رفرش شدن فرم پس از ارسال
 
   try {
+    // ارسال درخواست POST به مسیر API بک‌اند
     const response = await fetch(`/api/crud/blog`, {
-      method: "POST",
+      method: "POST", // نوع درخواست POST است چون داده ایجاد می‌کنیم
       body: JSON.stringify({
-        title,
-        content: markdown,
-        tags: selectedTags?.map((tag) => tag._id),
-        featuredImage,
+        title,                              // ارسال عنوان بلاگ
+        content: markdown,                 // ارسال محتوای بلاگ (markdown)
+        tags: selectedTags?.map((tag) => tag._id), // فقط شناسه تگ‌ها را ارسال می‌کنیم
+        featuredImage,                     // ارسال تصویر شاخص
       }),
     });
 
+    // دریافت پاسخ از سرور و تبدیل آن به JSON
     const data = await response.json();
 
+    // اگر پاسخ موفق نبود، پیام خطا با toast نمایش داده می‌شود
     if (!response.ok) {
-      toast.error(data?.err);
+      toast.error(data?.err); // نمایش خطای برگشتی از سرور
     } else {
-      toast.success(`بلاگ "${data?.blog?.title || title}" با موفقیت ایجاد شد`);
+      // در صورت موفقیت:
+      toast.success(`بلاگ "${data?.title}" با موفقیت ایجاد شد`);
       setStep(1);
+      
 
-      // پاک کردن localStorage
+      // حذف اطلاعات ذخیره‌شده در localStorage (برای جلوگیری از باقی ماندن اطلاعات قدیمی)
       localStorage.removeItem("savedTitle");
       localStorage.removeItem("savedMarkdown");
       localStorage.removeItem("selectedTags");
       localStorage.removeItem("featuredImage");
       localStorage.removeItem("imagePreview");
 
-      // پاک کردن stateها
-      setTitle("");
-      setMarkdown("");
-      setSelectedTags([]);
-      setFeaturedImage(null);
-      setImagePreview(null);
-
-      // ✅ به‌روزرسانی session برای اعمال سریع نقش جدید (author)
-      try {
-        const newRoles = data?.roles;
-        if (Array.isArray(newRoles) && newRoles.length) {
-          await update({ role: newRoles });
-        }
-      } catch (err) {
-        console.log("session update error", err);
-      }
+      // پاک کردن stateهای مرتبط با بلاگ (ریست کردن فرم)
+      setTitle("");              // پاک کردن عنوان
+      setMarkdown("");          // پاک کردن محتوا
+      setSelectedTags([]);      // پاک کردن تگ‌های انتخاب‌شده
+      setFeaturedImage(null);   // پاک کردن تصویر شاخص
+      setImagePreview(null);    // پاک کردن پیش‌نمایش تصویر
     }
   } catch (err) {
+    // در صورت بروز خطا در عملیات fetch، آن را در کنسول چاپ کن
     console.log(err);
   }
 };
@@ -392,19 +406,19 @@ const blogDelete = async (blogId) => {
   return (
     <BlogContext.Provider
       value={{
-        title,
-        setTitle,
-        markdown,
-        setMarkdown,
-        tagName,
-        setTagName,
-        tags,
-        setTags,
-        tagCreate,
+        title,          // عنوان بلاگ
+        setTitle,       // تابع تغییر عنوان
+        markdown,       // محتوای markdown
+        setMarkdown,    // تابع تغییر محتوا
+        tagName,        // نام تگ جدید
+        setTagName,     // تابع تغییر تگ جدید
+        tags,           // لیست تگ‌ها
+        setTags,        // تابع به‌روزرسانی لیست تگ‌ها
+        tagCreate,      // تابع ساخت تگ
         tagList,
         blogCreate,
         searchTerm,
-        setSearchTerm,
+        setSearchTerm,     // تابع ساخت بلاگ
         selectedTags,
         setSelectedTags,
         featuredImage,

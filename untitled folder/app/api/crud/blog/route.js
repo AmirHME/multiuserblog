@@ -30,15 +30,15 @@ export async function POST(req) {
 
     });
 
-    // بعد از دریافت اطلاعات کاربر لاگین‌شده (مثلاً از session یا token)
-    const updatedUser = await User.findOneAndUpdate(
-      { _id: user.id },
-      { $addToSet: { role: "author" } }, // اطمینان از اینکه نقش author فقط یکبار اضافه می‌شه
-      { new: true, select: "role" }
-    );
+// بعد از دریافت اطلاعات کاربر لاگین‌شده (مثلاً از session یا token)
+await User.findOneAndUpdate(
+  { _id: user.id },
+  { $addToSet: { role: "author" } } // اطمینان از اینکه نقش author فقط یکبار اضافه می‌شه
+);
 
-    // اگر موفق بود، بلاگ ایجاد شده و نقش‌های جدید را برگردان
-    return NextResponse.json({ blog, roles: updatedUser?.role || [] });
+
+    // اگر موفق بود، بلاگ ایجاد شده را برگردان
+    return NextResponse.json(blog);
   } catch (err) {
     // اگر خطا داشت، پاسخ با وضعیت 500 و پیام خطا
     return NextResponse.json(

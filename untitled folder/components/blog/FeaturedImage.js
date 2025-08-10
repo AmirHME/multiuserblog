@@ -63,19 +63,15 @@ export default function FeaturedImage({ onNextStep, onPrevStep }) {
     <div className="container">
 
       {/* اگر تصویری انتخاب شده باشد، نمایش آن در مرکز صفحه */}
-
-
       {imagePreview && (
-  <div className="row justify-content-center">
-    <div className="col-lg-8 text-center">
-      <img
-        src={imagePreview}
-        alt="Preview"
-        className="img-fluid rounded"
-      />
-    </div>
-  </div>
-)}
+        <div className="col-lg-8 offset-lg-2">
+          <img
+            src={imagePreview}                 // نمایش پیش‌نمایش تصویر
+            alt="Preview"                      // متن جایگزین
+            className="img img-fluid rounded"  // استایل بوت‌استرپی برای زیبایی
+          />
+        </div>
+      )}
 
       {/* دکمه انتخاب و آپلود تصویر */}
       <div className="d-flex justify-content-center mt-4">
@@ -118,7 +114,3 @@ export default function FeaturedImage({ onNextStep, onPrevStep }) {
     </div>
   );
 }
-
-
-
-

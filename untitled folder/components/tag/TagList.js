@@ -125,7 +125,7 @@ export default function TagList() {
                     console.log("🧨 دکمه حذف کلیک شد. ID:", tag._id);
                     tagDelete(tag._id); // فراخوانی تابع حذف تگ از سرور
                   }}
-                    className="btn btn-lg btn-outline-danger ms-4"
+                  className="btn btn-lg btn-outline-danger me-4"
                 >
                   X
                 </button>
