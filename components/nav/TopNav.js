@@ -30,7 +30,7 @@ export default function TopNav() {
   className="nav-link"
   href={status === "authenticated" ? "/blog/create" : "/register"}
 >
-  یک بلاگ بنویس
+  بلاگ جدید +
 </Link>
       </div>
 
